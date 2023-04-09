@@ -6523,6 +6523,42 @@ function test(q: GetEntityBrandDataQuery): void {
       `);
     });
 
+    it("'inline' yields correct types except specified fragments", async () => {
+      const ast = parse(/* GraphQL */ `
+        query {
+          me {
+            ...UserFragment
+            ...ComplexFragment
+          }
+        }
+        fragment UserFragment on User {
+          id
+        }
+        fragment ComplexFragment on User {
+          username
+        }
+      `);
+      const result = await plugin(
+        schema,
+        [{ location: 'test-file.ts', document: ast }],
+        { inlineFragmentTypes: { type: 'inline', except: ['ComplexFragment'] } },
+        { outputFile: '' }
+      );
+      expect(result.content).toBeSimilarStringTo(`
+        export type Unnamed_1_QueryVariables = Exact<{ [key: string]: never; }>;
+
+
+        export type Unnamed_1_Query = { __typename?: 'Query', me?: (
+          { __typename?: 'User', id: string }
+          & ComplexFragmentFragment
+        ) | null };
+
+        export type UserFragmentFragment = { __typename?: 'User', id: string };
+
+        export type ComplexFragmentFragment = { __typename?: 'User', username: string };
+      `);
+    });
+
     it("'mask' yields correct types", async () => {
       const ast = parse(/* GraphQL */ `
         query {

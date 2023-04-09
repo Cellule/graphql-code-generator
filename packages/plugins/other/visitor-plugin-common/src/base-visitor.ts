@@ -19,7 +19,7 @@ export interface BaseVisitorConvertOptions {
   useTypesSuffix?: boolean;
 }
 
-export type InlineFragmentTypeOptions = 'inline' | 'combine' | 'mask';
+export type InlineFragmentTypeOptions = 'inline' | 'combine' | 'mask' | { type: 'inline'; except?: string[] };
 
 export interface ParsedConfig {
   scalars: ParsedScalarsMap;
@@ -357,7 +357,7 @@ export interface RawConfig {
    * "inline" is the default behavior and will perform deep inlining fragment types within operation type definitions.
    * "combine" is the previous behavior that uses fragment type references without inlining the types (and might cause issues with deeply nested fragment that uses list types).
    *
-   * @type string
+   * @type string | { type: 'inline', except?: string[] }
    * @default inline
    */
   inlineFragmentTypes?: InlineFragmentTypeOptions;

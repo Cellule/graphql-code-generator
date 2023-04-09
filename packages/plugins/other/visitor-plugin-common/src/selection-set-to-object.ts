@@ -494,7 +494,13 @@ export class SelectionSetToObject<Config extends ParsedDocumentsConfig = ParsedD
         continue;
       }
 
-      if (this._config.inlineFragmentTypes === 'combine' || this._config.inlineFragmentTypes === 'mask') {
+      if (
+        this._config.inlineFragmentTypes === 'combine' ||
+        this._config.inlineFragmentTypes === 'mask' ||
+        (typeof this._config.inlineFragmentTypes === 'object' &&
+          this._config.inlineFragmentTypes.type === 'inline' &&
+          this._config.inlineFragmentTypes.except?.includes(selectionNode.fragmentName))
+      ) {
         fragmentsSpreadUsages.push(selectionNode.typeName);
         continue;
       }
@@ -588,6 +594,12 @@ export class SelectionSetToObject<Config extends ParsedDocumentsConfig = ParsedD
         fields.push(...fragmentsSpreadUsages);
       } else if (this._config.inlineFragmentTypes === 'mask') {
         fields.push(`{ ' $fragmentRefs'?: { ${fragmentsSpreadUsages.map(name => `'${name}': ${name}`).join(`;`)} } }`);
+      } else if (
+        typeof this._config.inlineFragmentTypes === 'object' &&
+        this._config.inlineFragmentTypes.type === 'inline' &&
+        this._config.inlineFragmentTypes.except?.length
+      ) {
+        fields.push(...fragmentsSpreadUsages);
       }
     }
 
